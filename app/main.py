@@ -61,24 +61,17 @@ async def lifespan(app: FastAPI):
             model_path = path
             break
 
+    fallback_path = model_path or "models/cnn_latest.pt"
+
     try:
-        if model_path is not None:
-            logger.info({"message": "Loading model", "model_path": model_path})
-            model = load_model_for_serving(model_path, device=device)
-            ml_models["model"] = model
-            ml_models["device"] = device
-            APP_READY = True
-            logger.info({"message": "Model loaded successfully", "model_path": model_path})
-        else:
-            logger.warning({
-                "message": "Model path not found. Startup will remain unhealthy.",
-                "cwd": os.getcwd(),
-                "files": sorted(os.listdir(".")[:50]) if os.path.exists(".") else []
-            })
-            ml_models["model"] = None
-            APP_READY = False
+        logger.info({"message": "Loading model", "model_path": fallback_path})
+        model = load_model_for_serving(fallback_path, device=device)
+        ml_models["model"] = model
+        ml_models["device"] = device
+        APP_READY = True
+        logger.info({"message": "Model loaded successfully", "model_path": fallback_path})
     except Exception as e:
-        logger.error({"message": "Failed to load model", "error": str(e), "model_path": model_path})
+        logger.error({"message": "Failed to load model", "error": str(e), "model_path": fallback_path})
         ml_models["model"] = None
         APP_READY = False
         
