@@ -40,8 +40,7 @@ RUN pip install --no-cache /wheels/*
 # Copy application code
 COPY app/ app/
 COPY src/ src/
-# Optional: copy models if they are baked in (usually handled via volume or download step in production)
-# COPY models/ models/
+COPY models/ models/
 
 # Set permissions
 RUN chown -R appuser:appgroup /app

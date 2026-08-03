@@ -9,8 +9,6 @@ services:
       - "8000:8000"
     environment:
       - MODEL_PATH=/app/models/cnn_latest.pt
-    volumes:
-      - ./models:/app/models
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
