@@ -108,6 +108,22 @@ jobs:
           docker compose down
           IMAGE_URI="$IMAGE_URI" docker compose up -d --remove-orphans
 
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8000/health > /dev/null 2>&1; then
+              echo "Service is healthy"
+              break
+            fi
+            echo "Waiting for service to start..."
+            sleep 5
+          done
+
+          curl -sf http://localhost:8000/health > /dev/null || {
+            echo "Service did not become healthy in time";
+            docker compose ps;
+            docker logs $(docker compose ps -q) || true;
+            exit 1;
+          }
+
       - name: Run Smoke Tests
         run: |
           python -m pip install --upgrade pip
