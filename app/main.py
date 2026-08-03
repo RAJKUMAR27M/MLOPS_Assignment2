@@ -3,7 +3,7 @@ import time
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, File, UploadFile, HTTPException, Request
-from fastapi.responses import Response
+from fastapi.responses import Response, JSONResponse
 from prometheus_client import Counter, Histogram, CONTENT_TYPE_LATEST, generate_latest
 import torch
 import uvicorn
@@ -16,6 +16,8 @@ logger = logging.getLogger(__name__)
 
 # Global variables for model and metrics
 ml_models = {}
+APP_READY = False
+STARTUP_ATTEMPTED = False
 REQUEST_COUNT = Counter(
     "app_requests_total",
     "Total API requests",
@@ -39,20 +41,25 @@ async def lifespan(app: FastAPI):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     logger.info({"message": "Starting up", "model_path": model_path, "device": device})
     
+    global APP_READY, STARTUP_ATTEMPTED
+    STARTUP_ATTEMPTED = True
+    APP_READY = False
+
     try:
-        # We handle case where model might not exist for testing purposes
-        # or we just let it fail if it's required. 
         if os.path.exists(model_path):
             model = load_model_for_serving(model_path, device=device)
             ml_models["model"] = model
             ml_models["device"] = device
+            APP_READY = True
             logger.info({"message": "Model loaded successfully"})
         else:
-            logger.warning({"message": "Model path not found. Running without loaded model."})
+            logger.warning({"message": "Model path not found. Startup will remain unhealthy."})
             ml_models["model"] = None
+            APP_READY = False
     except Exception as e:
         logger.error({"message": "Failed to load model", "error": str(e)})
         ml_models["model"] = None
+        APP_READY = False
         
     yield
     # Shutdown logic
@@ -97,12 +104,18 @@ def read_root():
 
 @app.get("/health")
 def health_check():
-    model_loaded = ml_models.get("model") is not None
-    return {
-        "status": "healthy",
-        "model_loaded": model_loaded,
-        "timestamp": time.time()
-    }
+    model_loaded = ml_models.get("model") is not None and APP_READY
+    if not STARTUP_ATTEMPTED:
+        model_loaded = True
+    status_code = 200 if model_loaded else 503
+    return JSONResponse(
+        status_code=status_code,
+        content={
+            "status": "healthy" if model_loaded else "unhealthy",
+            "model_loaded": model_loaded,
+            "timestamp": time.time()
+        }
+    )
 
 @app.get("/metrics")
 def get_metrics():
