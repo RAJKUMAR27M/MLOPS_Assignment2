@@ -1,28 +1,48 @@
 # Cats vs Dogs MLOps Assignment 2
 
-This workspace contains a compact end-to-end MLOps solution for the Cats vs Dogs binary image classification use case.
+This repository contains a compact end-to-end MLOps solution for the Cats vs Dogs binary image classification use case. It covers data preprocessing, model training with experiment tracking, API deployment, Docker packaging, CI/CD automation, Kubernetes manifests, monitoring, and smoke testing.
 
 ## What is included
-- Data preprocessing and splitting pipeline
-- Baseline CNN training with MLflow experiment tracking
-- FastAPI inference service with health, prediction, and metrics endpoints
-- Docker containerization and Docker Compose deployment
-- GitHub Actions CI/CD workflow with tests and image build/push
-- Kubernetes manifests for deployment and service
-- Prometheus/Grafana monitoring setup
-- Smoke test scripts for deployment verification
+- Data preprocessing and splitting pipeline in [src/data_preprocessing.py](src/data_preprocessing.py)
+- Baseline CNN training and evaluation in [src/train.py](src/train.py) and [src/evaluate.py](src/evaluate.py)
+- FastAPI inference service with health, prediction, and metrics endpoints in [app/main.py](app/main.py)
+- Docker and Docker Compose setup in [Dockerfile](Dockerfile) and [docker-compose.yml](docker-compose.yml)
+- GitHub Actions workflow in [.github/workflows/ci-cd.yml](.github/workflows/ci-cd.yml)
+- Kubernetes manifests in [k8s/deployment.yaml](k8s/deployment.yaml) and [k8s/service.yaml](k8s/service.yaml)
+- DVC pipeline in [dvc.yaml](dvc.yaml)
+- Monitoring configuration in [monitoring/prometheus.yml](monitoring/prometheus.yml)
 
 ## Quick start
-1. Install dependencies
-   - `pip install -r requirements-dev.txt`
-2. Run tests
-   - `pytest tests -q`
-3. Start the API locally
-   - `python -m uvicorn app.main:app --host 127.0.0.1 --port 8000`
-4. Run smoke tests
-   - `python scripts/smoke_test.py --url http://127.0.0.1:8000`
+1. Create and activate a virtual environment
+   - Windows PowerShell:
+     ```powershell
+     python -m venv .venv
+     .venv\Scripts\Activate.ps1
+     ```
+2. Install dependencies
+   ```powershell
+   pip install --upgrade pip
+   pip install -r requirements-dev.txt
+   ```
+3. Run tests
+   ```powershell
+   pytest tests -q
+   ```
+4. Run the DVC pipeline
+   ```powershell
+   dvc repro
+   ```
+5. Start the API locally
+   ```powershell
+   python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+   ```
+6. Run smoke tests
+   ```powershell
+   python scripts/smoke_test.py --url http://127.0.0.1:8000
+   ```
 
-## Submission artifacts
-- Final report: [FINAL_SUBMISSION_REPORT.md](FINAL_SUBMISSION_REPORT.md)
-- DVC pipeline: [dvc.yaml](dvc.yaml)
-- CI/CD workflow: [.github/workflows/ci-cd.yml](.github/workflows/ci-cd.yml)
+## Submission notes
+- The project is organized and ready to submit as-is.
+- The trained model artifact is available in [models/cnn_latest.pt](models/cnn_latest.pt).
+- The README serves as the primary submission guide for setup and verification.
+- Local verification was completed with the test suite using `pytest tests -q`.
