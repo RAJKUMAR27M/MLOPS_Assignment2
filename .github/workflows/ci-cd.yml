@@ -81,7 +81,7 @@ jobs:
   deploy:
     name: Deploy via Docker Compose
     needs: build-and-push
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       contents: read
