@@ -58,6 +58,9 @@ EXPOSE 8000
 ENV PORT=8000
 ENV MODEL_PATH=/app/models/cnn_latest.pt
 
+# Copy the model artifact into a stable location inside the container
+COPY models/cnn_latest.pt /app/models/cnn_latest.pt
+
 # Healthcheck without requiring curl in slim image
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
   CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"

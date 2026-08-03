@@ -37,27 +37,48 @@ PREDICTION_COUNT = Counter(
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup logic
-    model_path = os.getenv("MODEL_PATH", "models/cnn_latest.pt")
+    candidate_paths = []
+    env_path = os.getenv("MODEL_PATH")
+    if env_path:
+        candidate_paths.append(env_path)
+    candidate_paths.extend([
+        "models/cnn_latest.pt",
+        "/app/models/cnn_latest.pt",
+        "/app/models/model.pt",
+        "cnn_latest.pt",
+    ])
+
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    logger.info({"message": "Starting up", "model_path": model_path, "device": device})
-    
+    logger.info({"message": "Starting up", "candidate_paths": candidate_paths, "device": device})
+
     global APP_READY, STARTUP_ATTEMPTED
     STARTUP_ATTEMPTED = True
     APP_READY = False
 
+    model_path = None
+    for path in candidate_paths:
+        if os.path.exists(path):
+            model_path = path
+            break
+
     try:
-        if os.path.exists(model_path):
+        if model_path is not None:
+            logger.info({"message": "Loading model", "model_path": model_path})
             model = load_model_for_serving(model_path, device=device)
             ml_models["model"] = model
             ml_models["device"] = device
             APP_READY = True
-            logger.info({"message": "Model loaded successfully"})
+            logger.info({"message": "Model loaded successfully", "model_path": model_path})
         else:
-            logger.warning({"message": "Model path not found. Startup will remain unhealthy."})
+            logger.warning({
+                "message": "Model path not found. Startup will remain unhealthy.",
+                "cwd": os.getcwd(),
+                "files": sorted(os.listdir(".")[:50]) if os.path.exists(".") else []
+            })
             ml_models["model"] = None
             APP_READY = False
     except Exception as e:
-        logger.error({"message": "Failed to load model", "error": str(e)})
+        logger.error({"message": "Failed to load model", "error": str(e), "model_path": model_path})
         ml_models["model"] = None
         APP_READY = False
         

@@ -20,11 +20,22 @@ def load_model_for_serving(model_path, device='cpu'):
     
     # Initialize model architecture
     model = SimpleCNN(num_classes=len(CLASS_NAMES))
-    
-    # Load weights
-    state_dict = torch.load(model_path, map_location=device)
-    model.load_state_dict(state_dict)
-    
+
+    # Load weights. Accept both a plain state_dict and a checkpoint dict.
+    checkpoint = torch.load(model_path, map_location=device)
+    if isinstance(checkpoint, dict) and "state_dict" in checkpoint:
+        state_dict = checkpoint["state_dict"]
+    elif isinstance(checkpoint, dict) and any(k.startswith("layer") or k.startswith("conv") or k.startswith("fc") for k in checkpoint.keys()):
+        state_dict = checkpoint
+    else:
+        state_dict = checkpoint.state_dict() if hasattr(checkpoint, "state_dict") else checkpoint
+
+    if isinstance(state_dict, dict):
+        state_dict = {k.replace("module.", ""): v for k, v in state_dict.items()}
+        model.load_state_dict(state_dict, strict=False)
+    else:
+        model.load_state_dict(state_dict)
+
     model.to(device)
     model.eval()
     return model
