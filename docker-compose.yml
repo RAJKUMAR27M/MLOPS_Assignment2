@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  cats-dogs-api:
+    build: .
+    image: ${IMAGE_URI:-ghcr.io/rajkumar-madhavan/mlops-cats-dogs:latest}
+    container_name: cats-dogs-api
+    ports:
+      - "8000:8000"
+    environment:
+      - MODEL_PATH=/app/models/cnn_latest.pt
+    volumes:
+      - ./models:/app/models
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped

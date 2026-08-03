@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cats-dogs-api-service
+  labels:
+    app: cats-dogs-api
+spec:
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 8000
+      protocol: TCP
+      nodePort: 30080
+  selector:
+    app: cats-dogs-api

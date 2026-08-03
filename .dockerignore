@@ -1,0 +1,12 @@
+.git
+data/
+mlruns/
+__pycache__
+.venv
+*.pyc
+*.egg-info
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+tests/

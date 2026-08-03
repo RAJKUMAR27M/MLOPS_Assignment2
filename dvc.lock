@@ -1,0 +1,66 @@
+schema: '2.0'
+stages:
+  preprocess:
+    cmd: python -c "from src.data_preprocessing import download_dataset, 
+      preprocess_images, split_dataset; download_dataset(); 
+      preprocess_images('data/raw','data/interim',224); 
+      split_dataset('data/interim','data/processed')"
+    deps:
+    - path: src/data_preprocessing.py
+      hash: md5
+      md5: acf2f5ea102e00378300925e95495a7b
+      size: 6637
+    outs:
+    - path: data/processed
+      hash: md5
+      md5: d0bc0ae10944c99256a07eaeef7105bc.dir
+      size: 28250
+      nfiles: 20
+  train:
+    cmd: python -m src.train --epochs 1 --batch_size 4 --lr 0.001 --data_dir 
+      data/processed --model_name cnn
+    deps:
+    - path: data/processed
+      hash: md5
+      md5: d0bc0ae10944c99256a07eaeef7105bc.dir
+      size: 28250
+      nfiles: 20
+    - path: src/model.py
+      hash: md5
+      md5: ce2429031534e6bf3863c4eae6f146df
+      size: 1921
+    - path: src/train.py
+      hash: md5
+      md5: 7b820e65d6e6481e5f8a350a5c9d1676
+      size: 4139
+    outs:
+    - path: artifacts/loss_curves.png
+      hash: md5
+      md5: acf6c6439331697ba50fd6af5abb05a5
+      size: 10981
+    - path: models/cnn_latest.pt
+      hash: md5
+      md5: 36a2fb1da92dc0672c974c30ad578569
+      size: 102870901
+  evaluate:
+    cmd: python -m src.evaluate --data_dir data/processed --model_path 
+      models/cnn_latest.pt --model_name cnn
+    deps:
+    - path: data/processed
+      hash: md5
+      md5: d0bc0ae10944c99256a07eaeef7105bc.dir
+      size: 28250
+      nfiles: 20
+    - path: models/cnn_latest.pt
+      hash: md5
+      md5: 36a2fb1da92dc0672c974c30ad578569
+      size: 102870901
+    - path: src/evaluate.py
+      hash: md5
+      md5: 70ba26f7cedce4d93843dd54744dc7db
+      size: 2418
+    outs:
+    - path: artifacts/confusion_matrix.png
+      hash: md5
+      md5: efdeb6ba7e7eab27b96f8f0d976a0307
+      size: 14740

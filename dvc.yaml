@@ -1,0 +1,24 @@
+stages:
+  preprocess:
+    cmd: python -c "from src.data_preprocessing import download_dataset, preprocess_images, split_dataset; download_dataset(); preprocess_images('data/raw','data/interim',224); split_dataset('data/interim','data/processed')"
+    deps:
+      - src/data_preprocessing.py
+    outs:
+      - data/processed
+  train:
+    cmd: python -m src.train --epochs 1 --batch_size 4 --lr 0.001 --data_dir data/processed --model_name cnn
+    deps:
+      - data/processed
+      - src/train.py
+      - src/model.py
+    outs:
+      - models/cnn_latest.pt
+      - artifacts/loss_curves.png
+  evaluate:
+    cmd: python -m src.evaluate --data_dir data/processed --model_path models/cnn_latest.pt --model_name cnn
+    deps:
+      - models/cnn_latest.pt
+      - data/processed
+      - src/evaluate.py
+    outs:
+      - artifacts/confusion_matrix.png

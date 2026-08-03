@@ -1,0 +1,19 @@
+# Ignore python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ignore git
+.git/
+
+# Ignore venv
+venv/
+env/
+.env
+
+# Ignore ide
+.vscode/
+.idea/
+
+# Ignore tracking data
+mlruns/
