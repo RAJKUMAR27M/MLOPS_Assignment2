@@ -42,7 +42,6 @@ This repository contains a compact end-to-end MLOps solution for the Cats vs Dog
    ```
 
 ## Submission notes
-- The project is organized and ready to submit as-is.
 - The trained model artifact is available in [models/cnn_latest.pt](models/cnn_latest.pt).
 - The README serves as the primary submission guide for setup and verification.
 - Repository reference: [RAJKUMAR27M/MLOPS_Assignment2](https://github.com/RAJKUMAR27M/MLOPS_Assignment2)
