@@ -42,6 +42,9 @@ COPY app/ app/
 COPY src/ src/
 COPY models/ models/
 
+# Ensure the model artifact is present at runtime
+RUN ls -la /app/models || true
+
 # Set permissions
 RUN chown -R appuser:appgroup /app
 

@@ -108,21 +108,26 @@ jobs:
           docker compose down
           IMAGE_URI="$IMAGE_URI" docker compose up -d --remove-orphans
 
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:8000/health > /dev/null 2>&1; then
+          for i in $(seq 1 60); do
+            STATUS=$(curl -s -o /tmp/health.out -w '%{http_code}' http://localhost:8000/health || true)
+            if [ "$STATUS" = "200" ]; then
               echo "Service is healthy"
+              cat /tmp/health.out
               break
             fi
             echo "Waiting for service to start..."
+            docker compose ps
+            docker logs $(docker compose ps -q) 2>/dev/null | tail -n 40 || true
             sleep 5
           done
 
-          curl -sf http://localhost:8000/health > /dev/null || {
+          STATUS=$(curl -s -o /tmp/health.out -w '%{http_code}' http://localhost:8000/health || true)
+          if [ "$STATUS" != "200" ]; then
             echo "Service did not become healthy in time";
             docker compose ps;
             docker logs $(docker compose ps -q) || true;
             exit 1;
-          }
+          fi
 
       - name: Run Smoke Tests
         run: |
