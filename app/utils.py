@@ -34,7 +34,12 @@ def load_model_for_serving(model_path, device='cpu'):
         model = SimpleCNN(num_classes=len(CLASS_NAMES))
 
         # Load weights. Accept both a plain state_dict and a checkpoint dict.
-        checkpoint = torch.load(model_path, map_location=device)
+        try:
+            checkpoint = torch.load(model_path, map_location=device)
+        except Exception as load_error:
+            if "Weights only load failed" not in str(load_error):
+                raise
+            checkpoint = torch.load(model_path, map_location=device, weights_only=False)
         if isinstance(checkpoint, dict) and "state_dict" in checkpoint:
             state_dict = checkpoint["state_dict"]
         elif isinstance(checkpoint, dict) and any(k.startswith("layer") or k.startswith("conv") or k.startswith("fc") for k in checkpoint.keys()):

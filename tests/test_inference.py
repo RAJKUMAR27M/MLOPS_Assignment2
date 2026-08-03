@@ -54,6 +54,25 @@ def test_predict_output_format():
     assert "dog" in probs
     assert probs["cat"] + probs["dog"] == pytest.approx(1.0)
 
+def test_load_model_supports_legacy_checkpoint(monkeypatch, tmp_path):
+    model_path = tmp_path / "legacy_checkpoint.pt"
+    model_path.write_bytes(b"legacy")
+
+    expected_state_dict = SimpleCNN(num_classes=2).state_dict()
+
+    def fake_torch_load(path, map_location=None, **kwargs):
+        assert str(path) == str(model_path)
+        if kwargs.get("weights_only") is False:
+            return expected_state_dict
+        raise Exception("Weights only load failed")
+
+    monkeypatch.setattr("app.utils.torch.load", fake_torch_load)
+
+    from app.utils import load_model_for_serving
+
+    loaded = load_model_for_serving(str(model_path), device="cpu")
+    assert isinstance(loaded, SimpleCNN)
+
 def test_health_endpoint():
     response = client.get("/health")
     assert response.status_code == 200
@@ -101,4 +120,3 @@ def test_predict_endpoint_with_mock_model():
     assert "confidence" in data
     assert "probabilities" in data
     assert data["prediction"] in ["cat", "dog"]
-
