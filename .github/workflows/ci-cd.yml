@@ -101,6 +101,9 @@ jobs:
         env:
           IMAGE_URI: ghcr.io/${{ github.repository }}/cats-dogs-api:latest
         run: |
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_URI="ghcr.io/${REPO_LOWER}/cats-dogs-api:latest"
+          echo "Using image: $IMAGE_URI"
           docker pull "$IMAGE_URI"
           docker compose down
           IMAGE_URI="$IMAGE_URI" docker compose up -d --remove-orphans
