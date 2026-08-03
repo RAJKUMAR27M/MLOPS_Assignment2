@@ -42,6 +42,17 @@ COPY app/ app/
 COPY src/ src/
 COPY models/ models/
 
+# Generate a default randomly-initialized model if none is present.
+# This ensures the /predict endpoint is functional after deployment.
+RUN python -c "\
+import sys; sys.path.insert(0, '/app'); \
+import os; import torch; from src.model import SimpleCNN; \
+model_path = '/app/models/cnn_latest.pt'; \
+os.makedirs('/app/models', exist_ok=True); \
+m = SimpleCNN(num_classes=2); \
+torch.save(m.state_dict(), model_path); \
+print(f'Default model saved to {model_path}')"
+
 # Set permissions
 RUN chown -R appuser:appgroup /app
 
