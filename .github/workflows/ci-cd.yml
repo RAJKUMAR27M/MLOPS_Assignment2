@@ -59,11 +59,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Lowercase repository name
+        run: echo "REPO_LC=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}/cats-dogs-api
+          images: ghcr.io/${{ env.REPO_LC }}/cats-dogs-api
           tags: |
             type=sha
             type=raw,value=latest
@@ -101,6 +104,7 @@ jobs:
         env:
           IMAGE_URI: ghcr.io/${{ github.repository }}/cats-dogs-api:latest
         run: |
+          IMAGE_URI="${IMAGE_URI,,}"
           docker pull "$IMAGE_URI"
           docker compose down
           IMAGE_URI="$IMAGE_URI" docker compose up -d --remove-orphans
